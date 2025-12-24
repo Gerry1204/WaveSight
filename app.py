@@ -24,6 +24,7 @@ import numpy as np
 @app.route('/upload_csv', methods=['POST'])
 def upload_csv():
     file = request.files.get('file')
+    print("Received upload_csv request")
     if not file:
         return jsonify({'error': 'No file'}), 400
     x = []
@@ -45,6 +46,7 @@ def upload_csv():
                         y_list[i-1].append(float(row[i]))
                     except:
                         y_list[i-1].append(row[i])
+        print(f"CSV Parsed: {len(x)} rows, {len(header)-1} cols")
         return jsonify({'x': x, 'y_list': y_list, 'header': header})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -59,6 +61,7 @@ def fft():
     start = data.get('start', 0)
     end = data.get('end', None)
     sample_rate = data.get('sample_rate', 1.0)  # 可選，預設 1.0
+    print(f"FFT Request: axis={axis}, start={start}, end={end}")
     if y_list is None or axis is None:
         return jsonify({'error': 'Missing y_list or axis'}), 400
     try:
@@ -74,6 +77,51 @@ def fft():
         freq = xf[idx].tolist()
         amp = (2.0/N * np.abs(yf[idx])).tolist()
         return jsonify({'freq': freq, 'amp': amp})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# 濾波器路由
+import scipy.signal as signal
+
+@app.route('/apply_filter', methods=['POST'])
+def apply_filter():
+    data = request.json
+    y = data.get('y') # 單一軸數據
+    filter_type = data.get('type') # 'low', 'high', 'band'
+    cutoff = data.get('cutoff') # list [low, high] or float
+    fs = data.get('fs', 1.0) # 取樣頻率
+    order = data.get('order', 4)
+
+    print(f"Filter Request: type={filter_type}, cutoff={cutoff}, order={order}")
+
+    if not y or not filter_type or not cutoff:
+        return jsonify({'error': 'Missing parameters'}), 400
+
+    try:
+        y = np.array(y, dtype=float)
+        nyq = 0.5 * fs
+        
+        # 正規化截止頻率
+        if isinstance(cutoff, list):
+            normal_cutoff = [c / nyq for c in cutoff]
+        else:
+            normal_cutoff = cutoff / nyq
+
+        # 設計濾波器
+        if filter_type == 'band':
+            b, a = signal.butter(order, normal_cutoff, btype='band')
+        elif filter_type == 'low':
+            b, a = signal.butter(order, normal_cutoff, btype='low')
+        elif filter_type == 'high':
+            b, a = signal.butter(order, normal_cutoff, btype='high')
+        else:
+            return jsonify({'error': 'Unknown filter type'}), 400
+
+        # 應用濾波器 (使用 filtfilt 避免相位延遲)
+        y_filtered = signal.filtfilt(b, a, y)
+        
+        return jsonify({'y_filtered': y_filtered.tolist()})
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
