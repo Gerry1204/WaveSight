@@ -87,6 +87,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     axis2Select.appendChild(opt);
                   }
                 }
+
+                // Enable controls dependent on CSV2
+                const axis2 = document.getElementById("axis2-select");
+                if (axis2) axis2.disabled = false;
+                const compareBtn = document.getElementById("compare-btn");
+                if (compareBtn) compareBtn.disabled = false;
               }
             });
         }
@@ -397,7 +403,16 @@ document.addEventListener("DOMContentLoaded", function () {
               URL.revokeObjectURL(url);
             }
           } else if (type === "png") {
-            if (window.Plotly && document.getElementById("comparePlot")) {
+            var compareDiv = document.getElementById("comparePlot");
+            if (
+              !compareDiv ||
+              !compareDiv.data ||
+              compareDiv.data.length === 0
+            ) {
+              alert("請先產生疊圖");
+              return;
+            }
+            if (window.Plotly) {
               saveBtn.disabled = true;
               Plotly.downloadImage("comparePlot", {
                 format: type,
@@ -475,10 +490,42 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       let layout = {
         title: "疊圖比較",
-        xaxis: { title: xTitle },
-        yaxis: { title: "y" },
-        plot_bgcolor: "#f4f6fa",
-        paper_bgcolor: "#f4f6fa",
+        xaxis: {
+          title: xTitle,
+          gridcolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "rgba(255, 255, 255, 0.15)"
+              : "#ddd",
+          zerolinecolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "rgba(255, 255, 255, 0.15)"
+              : "#ddd",
+        },
+        yaxis: {
+          title: "y",
+          gridcolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "rgba(255, 255, 255, 0.15)"
+              : "#ddd",
+          zerolinecolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "rgba(255, 255, 255, 0.15)"
+              : "#ddd",
+        },
+        plot_bgcolor:
+          document.documentElement.getAttribute("data-bs-theme") === "dark"
+            ? "#212529"
+            : "#f4f6fa",
+        paper_bgcolor:
+          document.documentElement.getAttribute("data-bs-theme") === "dark"
+            ? "#212529"
+            : "#f4f6fa",
+        font: {
+          color:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "#ffffff"
+              : "#333",
+        },
       };
       var compareDiv = document.getElementById("comparePlot");
       let parent =
@@ -510,6 +557,18 @@ if (fftBtn) {
       alert("請先載入資料並選擇軸");
       return;
     }
+
+    // Loading State
+    const originalText = fftBtn.innerHTML;
+    fftBtn.disabled = true;
+    fftBtn.innerHTML =
+      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 分析中...';
+
+    const restoreBtn = () => {
+      fftBtn.disabled = false;
+      fftBtn.innerHTML = originalText;
+    };
+
     console.log("FFT Request: Axis=", axisIdx, "Range=", start, "~", end);
     // 送出 FFT 請求
     fetch("/fft", {
@@ -527,6 +586,7 @@ if (fftBtn) {
       .then((json) => {
         if (json.error) {
           alert("FFT 錯誤: " + json.error);
+          restoreBtn();
           return;
         }
         // 畫 FFT 結果於 FFT 分頁
@@ -543,10 +603,42 @@ if (fftBtn) {
         };
         let layout = {
           title: "FFT 頻譜圖",
-          xaxis: { title: "頻率 (Hz)" },
-          yaxis: { title: "幅值" },
-          plot_bgcolor: "#f4f6fa",
-          paper_bgcolor: "#f4f6fa",
+          xaxis: {
+            title: "頻率 (Hz)",
+            gridcolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+            zerolinecolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+          },
+          yaxis: {
+            title: "幅值",
+            gridcolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+            zerolinecolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+          },
+          plot_bgcolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "#212529"
+              : "#f4f6fa",
+          paper_bgcolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "#212529"
+              : "#f4f6fa",
+          font: {
+            color:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "#ffffff"
+                : "#333",
+          },
         };
         // 取得容器大小自動調整
         let fftDiv = document.getElementById("fftPlot");
@@ -562,9 +654,12 @@ if (fftBtn) {
         // 自動切換到 FFT 分頁
         let fftTab = document.getElementById("fft-tab");
         if (fftTab) fftTab.click();
+
+        restoreBtn();
       })
       .catch((err) => {
         alert("FFT 請求失敗: " + err);
+        restoreBtn();
       });
   });
 }
@@ -600,16 +695,59 @@ document.addEventListener("DOMContentLoaded", function () {
               );
               console.log("匯入檔案1 詳細資料 (json):", json);
               if (json.x && json.y_list && json.header) {
+                const lbl = document.getElementById("axis-label");
+                if (lbl) lbl.innerText = "選擇軸：";
+                window.isDemoMode = false;
                 chartData = [];
                 // Reset layout to ensure axis types are re-inferred (fixes string vs number axis issue)
                 layout = {
                   title: "",
                   autosize: true,
                   margin: { l: 40, r: 20, t: 40, b: 40 },
-                  yaxis: { title: "", automargin: true },
-                  xaxis: { title: "" },
-                  plot_bgcolor: "#f4f6fa",
-                  paper_bgcolor: "#f4f6fa",
+                  yaxis: {
+                    title: "",
+                    automargin: true,
+                    gridcolor:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "#ddd",
+                    zerolinecolor:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "#ddd",
+                  },
+                  xaxis: {
+                    title: "",
+                    gridcolor:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "#ddd",
+                    zerolinecolor:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "#ddd",
+                  },
+                  plot_bgcolor:
+                    document.documentElement.getAttribute("data-bs-theme") ===
+                    "dark"
+                      ? "#212529"
+                      : "#f4f6fa",
+                  paper_bgcolor:
+                    document.documentElement.getAttribute("data-bs-theme") ===
+                    "dark"
+                      ? "#212529"
+                      : "#f4f6fa",
+                  font: {
+                    color:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "#ffffff"
+                        : "#333",
+                  },
                 };
 
                 // 三軸配色：紅、綠、藍
@@ -655,6 +793,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("range-start").value = 0;
                 document.getElementById("range-end").value =
                   globalTableX.length - 1;
+
+                // Draw the chart
+                Plotly.newPlot("myPlot", chartData, layout, {
+                  responsive: true,
+                  displayModeBar: true,
+                });
+
                 resizePlot();
                 setTimeout(function () {
                   syncTableWithChart();
@@ -663,6 +808,34 @@ document.addEventListener("DOMContentLoaded", function () {
               // 匯入後自動切換到圖表分頁
               let chartTab = document.getElementById("chart-tab");
               if (chartTab) chartTab.click();
+
+              // Enable controls dependent on CSV1
+              const controlsToEnable = [
+                "axis-select",
+                "calc-btn",
+                "apply-avg-btn",
+                "apply-filter-btn",
+                "fft-btn",
+                "save-btn",
+              ];
+              controlsToEnable.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = false;
+              });
+              // Filter inputs
+              const filterInputs = [
+                "filter-type",
+                "filter-order",
+                "filter-cutoff1",
+                "filter-cutoff2",
+                "avg-n",
+                "range-start",
+                "range-end",
+              ];
+              filterInputs.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = false;
+              });
             });
         }
         document.body.removeChild(input);
@@ -866,74 +1039,26 @@ document.addEventListener("DOMContentLoaded", function () {
 // Plotly.js
 // 預設資料生成：產生更適合濾波與 FFT 測試的訊號
 // 訊號：低頻弦波 + 高頻弦波 + 些許雜訊
-var defaultN = 300;
-var defaultX = Array.from({ length: defaultN }, (_, i) => i);
-var defaultY = defaultX.map((x) =>
-  parseFloat(
-    (
-      10 * Math.sin(x * 0.1) +
-      2 * Math.sin(x * 0.8) +
-      (Math.random() - 0.5)
-    ).toFixed(3)
-  )
-);
+// function resizePlot() definition removed.
+// default data initialization removed.
 
-// 初始化全域變數，讓功能可直接使用
-globalTableHeader = ["Index", "預設訊號"];
-globalTableX = defaultX;
-globalTableYList = [defaultY];
-
-var chartData = [
-  {
-    x: defaultX,
-    y: defaultY,
-    type: "scatter",
-    mode: "lines",
-    // 預設資料也要符合紅綠藍邏輯，第一條為紅
-    line: { color: "#FF0000", width: 2 },
-    name: "預設訊號",
-  },
-];
-
-// 初始化 UI：填入軸選單與範圍
-document.addEventListener("DOMContentLoaded", function () {
-  const axisSelect = document.getElementById("axis-select");
-  if (axisSelect) {
-    axisSelect.innerHTML = "";
-    let opt = document.createElement("option");
-    opt.value = 0;
-    opt.textContent = "預設訊號";
-    axisSelect.appendChild(opt);
-  }
-  const rEnd = document.getElementById("range-end");
-  if (rEnd) rEnd.value = defaultN - 1;
-});
-var layout = {
-  title: "",
-  autosize: true,
-  margin: { l: 40, r: 20, t: 40, b: 40 },
-  yaxis: { title: "", automargin: true },
-  xaxis: { title: "" },
-  plot_bgcolor: "#f4f6fa",
-  paper_bgcolor: "#f4f6fa",
-};
 function resizePlot() {
   var plotDiv = document.getElementById("myPlot");
-  console.log("resizePlot called");
   if (!plotDiv || !plotDiv.parentElement) return;
   var parent = plotDiv.parentElement;
   var rect = parent.getBoundingClientRect();
   if (!rect || !rect.height || !rect.width) return;
-  try {
-    Plotly.newPlot("myPlot", chartData, layout, {
-      responsive: true,
-      displayModeBar: true,
-    });
-    Plotly.relayout("myPlot", { height: rect.height, width: rect.width });
-  } catch (e) {
-    console.warn("Plotly resizePlot error:", e);
+
+  if (plotDiv.layout) {
+    if (
+      plotDiv.layout.width !== rect.width ||
+      plotDiv.layout.height !== rect.height
+    ) {
+      Plotly.relayout(plotDiv, { width: rect.width, height: rect.height });
+    }
   }
 }
+
 window.addEventListener("resize", resizePlot);
 setTimeout(resizePlot, 100);
 // DataTables
@@ -1195,3 +1320,339 @@ window.applyFilter = function () {
     });
 };
 console.log("Main_v3.js loaded and window.applyFilter is defined.");
+
+// Theme Toggle Logic
+document.addEventListener("DOMContentLoaded", function () {
+  const toggleBtn = document.getElementById("theme-toggle");
+  const icon = toggleBtn ? toggleBtn.querySelector("i") : null;
+  const html = document.documentElement;
+
+  // Function to apply theme to plots
+  window.updatePlotTheme = function () {
+    const isDark = html.getAttribute("data-bs-theme") === "dark";
+    const bgColor = isDark ? "#212529" : "#f4f6fa";
+    const textColor = isDark ? "#f8f9fa" : "#333";
+
+    const layoutUpdate = {
+      plot_bgcolor: bgColor,
+      paper_bgcolor: bgColor,
+      font: { color: textColor },
+      "xaxis.gridcolor": isDark ? "rgba(255, 255, 255, 0.15)" : "#ddd",
+      "xaxis.zerolinecolor": isDark ? "rgba(255, 255, 255, 0.15)" : "#ddd",
+      "yaxis.gridcolor": isDark ? "rgba(255, 255, 255, 0.15)" : "#ddd",
+      "yaxis.zerolinecolor": isDark ? "rgba(255, 255, 255, 0.15)" : "#ddd",
+    };
+
+    ["myPlot", "fftPlot", "comparePlot"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && el.data) {
+        Plotly.relayout(id, layoutUpdate);
+      }
+    });
+  };
+
+  // Init from localStorage
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    html.setAttribute("data-bs-theme", "dark");
+    if (icon) {
+      icon.classList.remove("bi-moon");
+      icon.classList.add("bi-sun");
+    }
+    // Update plots if they exist (unlikely on load, but good practice)
+    setTimeout(window.updatePlotTheme, 100);
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", function () {
+      const currentTheme = html.getAttribute("data-bs-theme");
+      if (currentTheme === "dark") {
+        html.setAttribute("data-bs-theme", "light");
+        localStorage.setItem("theme", "light");
+        if (icon) {
+          icon.classList.remove("bi-sun");
+          icon.classList.add("bi-moon");
+        }
+      } else {
+        html.setAttribute("data-bs-theme", "dark");
+        localStorage.setItem("theme", "dark");
+        if (icon) {
+          icon.classList.remove("bi-moon");
+          icon.classList.add("bi-sun");
+        }
+      }
+      window.updatePlotTheme();
+    });
+  }
+});
+
+// Disable controls on load
+// Initialize with Mixed Signal Demo
+document.addEventListener("DOMContentLoaded", function () {
+  // Check if data is already loaded (e.g. from previous session or other init logic)
+  if (!globalTableYList) {
+    console.log("Auto-loading Default (Mixed) Signal...");
+    // Ensure loadDemoSignal is defined before calling if possible,
+    // otherwise use setTimeout or ensure script order.
+    // Since this is consistent with other listeners, it should be fine.
+    if (window.loadDemoSignal) {
+      window.loadDemoSignal("mixed");
+    } else {
+      // Fallback if function not ready immediately (unlikely in this structure)
+      setTimeout(() => {
+        if (window.loadDemoSignal) window.loadDemoSignal("mixed");
+      }, 100);
+    }
+  }
+});
+
+// Demo Signal Generation (Called by Dropdown)
+// Demo Signal Generation (Called by Dropdown)
+window.loadDemoSignal = function (type) {
+  console.log("Generating demo signal:", type);
+
+  // Generate data
+  const points = 1000;
+  const fs = 100; // 100Hz sample rate
+  let x = [];
+  let yLow = [];
+  let yHigh = [];
+  let yMixed = [];
+
+  for (let i = 0; i < points; i++) {
+    let t = i / fs;
+    x.push(t);
+
+    // Low Freq (2Hz)
+    yLow.push(10 * Math.sin(2 * Math.PI * 2 * t));
+
+    // High Freq (20Hz)
+    yHigh.push(5 * Math.sin(2 * Math.PI * 20 * t));
+
+    // Mixed (2Hz + 20Hz + Random)
+    let val =
+      10 * Math.sin(2 * Math.PI * 2 * t) +
+      2 * Math.sin(2 * Math.PI * 20 * t) +
+      (Math.random() - 0.5) * 5;
+    yMixed.push(val);
+  }
+
+  // Populate Globals with ALL signals
+  globalTableHeader = [
+    "time",
+    "Low_Freq_2Hz",
+    "High_Freq_20Hz",
+    "Mixed_Signal",
+  ];
+  globalTableX = x;
+  globalTableYList = [yLow, yHigh, yMixed];
+
+  console.log("Demo data generated. Rows:", x.length);
+
+  // Determine which index to show initially
+  let initialIndex = 0;
+  if (type === "high") initialIndex = 1;
+  if (type === "mixed") initialIndex = 2;
+
+  let name = globalTableHeader[initialIndex + 1];
+  let y = globalTableYList[initialIndex];
+
+  // Reset layout
+  layout = {
+    title: name,
+    autosize: true,
+    margin: { l: 40, r: 20, t: 40, b: 40 },
+    yaxis: {
+      title: "",
+      automargin: true,
+      gridcolor:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#555"
+          : "#ddd",
+      zerolinecolor:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#555"
+          : "#ddd",
+    },
+    xaxis: {
+      title: "Time (s)",
+      gridcolor:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#555"
+          : "#ddd",
+      zerolinecolor:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#555"
+          : "#ddd",
+    },
+    plot_bgcolor:
+      document.documentElement.getAttribute("data-bs-theme") === "dark"
+        ? "#212529"
+        : "#f4f6fa",
+    paper_bgcolor:
+      document.documentElement.getAttribute("data-bs-theme") === "dark"
+        ? "#212529"
+        : "#f4f6fa",
+    font: {
+      color:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#ffffff"
+          : "#333",
+    },
+  };
+
+  chartData = [];
+  let trace = {
+    x: x,
+    y: y,
+    type: "scatter",
+    mode: "lines",
+    name: name,
+    line: { width: 2 },
+  };
+  chartData.push(trace);
+
+  // Draw
+  Plotly.newPlot("myPlot", chartData, layout, {
+    responsive: true,
+    displayModeBar: true,
+  });
+
+  // Fill Axis Select with ALL options
+  const axisSelect = document.getElementById("axis-select");
+  if (axisSelect) {
+    axisSelect.innerHTML = "";
+    // Header[0] is time, so start from 1
+    for (let i = 1; i < globalTableHeader.length; i++) {
+      const opt = document.createElement("option");
+      opt.value = i - 1; // 0-based index for Y lists
+      opt.textContent = globalTableHeader[i];
+      axisSelect.appendChild(opt);
+    }
+    // Set selected value
+    axisSelect.value = initialIndex;
+  }
+
+  // Update Range Inputs
+  const startInput = document.getElementById("range-start");
+  const endInput = document.getElementById("range-end");
+  if (startInput) {
+    startInput.value = 0;
+    startInput.max = x.length - 1;
+  }
+  if (endInput) {
+    endInput.value = x.length - 1;
+    endInput.max = x.length - 1;
+  }
+
+  // Enable Controls (Just in case)
+  const controlsToEnable = [
+    "axis-select",
+    "calc-btn",
+    "apply-avg-btn",
+    "apply-filter-btn",
+    "fft-btn",
+    "save-btn",
+  ];
+  controlsToEnable.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = false;
+  });
+
+  const filterInputs = [
+    "filter-type",
+    "filter-order",
+    "filter-cutoff1",
+    "filter-cutoff2",
+    "avg-n",
+    "range-start",
+    "range-end",
+  ];
+  filterInputs.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = false;
+  });
+
+  // Switch to chart tab
+  let chartTab = document.getElementById("chart-tab");
+  if (chartTab) chartTab.click();
+
+  // Sync Table
+  setTimeout(syncTableWithChart, 0);
+
+  // Set Label to Demo Mode
+  const lbl = document.getElementById("axis-label");
+  if (lbl) lbl.innerText = "選擇範例：";
+
+  // Set Demo Mode Flag
+  window.isDemoMode = true;
+};
+
+// Axis Select Change Listener for Demo Mode
+document.addEventListener("DOMContentLoaded", function () {
+  const axisSelect = document.getElementById("axis-select");
+  if (axisSelect) {
+    axisSelect.addEventListener("change", function () {
+      if (window.isDemoMode && globalTableYList) {
+        const idx = parseInt(this.value);
+        const y = globalTableYList[idx];
+        const x = globalTableX;
+        const name = globalTableHeader[idx + 1];
+
+        const trace = {
+          x: x,
+          y: y,
+          type: "scatter",
+          mode: "lines",
+          name: name,
+          line: { width: 2 },
+        };
+
+        const layout = {
+          title: name,
+          autosize: true,
+          margin: { l: 40, r: 20, t: 40, b: 40 },
+          yaxis: {
+            title: "",
+            automargin: true,
+            gridcolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+            zerolinecolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+          },
+          xaxis: {
+            title: "Time (s)",
+            gridcolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+            zerolinecolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+          },
+          plot_bgcolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "#212529"
+              : "#f4f6fa",
+          paper_bgcolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "#212529"
+              : "#f4f6fa",
+          font: {
+            color:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "#ffffff"
+                : "#333",
+          },
+        };
+
+        Plotly.react("myPlot", [trace], layout);
+      }
+    });
+  }
+});

@@ -1,3 +1,79 @@
+:root {
+  --bg-panel: #e6e8ea;
+  --border-panel: #bfc3c7;
+  --text-main: #232a3b;
+  --bg-body-from: #f8f9fa;
+  --bg-body-to: #e9ecef;
+  --header-val-color: #1a6cff;
+  --btn-bg: #ffffff;
+}
+
+[data-bs-theme="dark"] {
+  --bg-panel: #212529;
+  --border-panel: rgba(255, 255, 255, 0.15);
+  --text-main: #ffffff;
+  --bg-body-from: #000000;
+  --bg-body-to: #1a1d20;
+  --header-val-color: #9ec5fe;
+  --btn-bg: #212529;
+}
+
+[data-bs-theme="dark"] #save-btn {
+  background-color: #ffffff;
+  color: #212529;
+  border-color: #ffffff;
+}
+
+/* 淺色模式下，主題切換按鈕 hover 變黑 */
+:not([data-bs-theme="dark"]) #theme-toggle:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* 深色模式下，主題切換按鈕 hover 變白 (反轉) */
+[data-bs-theme="dark"] #theme-toggle:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+/* 修正深色模式下禁用按鈕看不見的問題 - 增強 TN 螢幕對比 */
+[data-bs-theme="dark"] .btn:disabled {
+  color: #e9ecef !important;
+  border-color: #ced4da !important;
+  opacity: 0.85;
+}
+
+/* 強制深色模式選單樣式 */
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .form-control {
+  background-color: #2b3035;
+  border-color: #adb5bd;
+  color: #ffffff;
+}
+
+[data-bs-theme="dark"] .form-select:focus,
+[data-bs-theme="dark"] .form-control:focus {
+  background-color: #2b3035;
+  border-color: #86b7fe;
+  color: #dee2e6;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+[data-bs-theme="dark"] .form-select option {
+  background-color: #2b3035;
+  color: #dee2e6;
+}
+
+[data-bs-theme="dark"] ::placeholder {
+  color: #adb5bd !important;
+  opacity: 1;
+}
+
+[data-bs-theme="dark"] #version-badge {
+  background-color: #495057 !important;
+  color: #dee2e6 !important;
+  border-color: #6c757d !important;
+}
+
 /* right-bottom 5 按鈕橫向排列現代感 */
 .bottom-buttons {
   display: flex;
@@ -15,21 +91,20 @@
   letter-spacing: 0.02em;
 }
 
-/* Button Hover and Active Effects */
+/* Button Hover and Active Effects - 移除 transform 避免移動閃爍 */
 .btn {
-  transition: all 0.2s ease;
+  transition: filter 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  filter: brightness(1.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn:active {
-  filter: brightness(0.95);
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  filter: brightness(0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .header-labels span,
@@ -46,7 +121,7 @@
   font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
   font-size: 1.15em;
   font-weight: 600;
-  color: #232a3b;
+  color: var(--text-main);
   letter-spacing: 0.02em;
   align-items: center;
 }
@@ -54,53 +129,21 @@
   margin-top: 4px;
   font-size: 1.22em;
   font-weight: bold;
-  color: #1a6cff;
+  color: var(--header-val-color);
 }
 /* 右上標題分區樣式 */
 .right-header {
   width: 100%;
-  background: #e6e8ea;
+  background: var(--bg-panel);
   border-radius: 16px 16px 0 0;
-  border: 1.5px solid #bfc3c7;
+  border: 1.5px solid var(--border-panel);
   padding: 8px;
   box-sizing: border-box;
   justify-content: space-between;
   min-height: 90px;
   display: flex;
-  flex-direction: column; 
-  /* flex-direction: row 為預設，這裡改為 column 讓兩行對齊更好 ? 
-     Index.html 結構是 header-labels 和 header-values 兩個 div. 
-     原本 CSS 沒寫 flex-direction, 預設是 row? 
-     Wait, .right-header content is:
-     <div class="header-labels">...</div>
-     <div class="header-values">...</div>
-     If default is row, they are side-by-side. 
-     Use column to stack them if that was the intention, or check if they were side-by-side.
-     Looking at the screenshot description or inference: 
-     "stats" usually are label above value. 
-     If they are row, they are left/right. 
-     
-     Let's check index.html again. 
-     It has header-labels and header-values. 
-     Inside header-labels: span, span...
-     If right-header is flex row (default), then labels block is left, values block is right? 
-     No, `header-values` has `margin-top: 4px`. This implies stacking.
-     So right-header should probably be flex-direction: column.
-     The original CSS had `/* flex-direction: row 為預設，可省略 */` but that might be a wrong comment if the user sees stacked. 
-     Actually, if they are `div`s and no flex is applied `display: flex` on parent, they become flex items using row direction.
-     So labels left, values right.
-     However, header-values has `margin-top: 4px`. This suggests vertical spacing.
-     If they are side by side, margin-top pushes it down... relative to what?
-     
-     Let's preserve existing flex behavior but fix height.
-     If the user wants "header height small", stacking them saves horizontal space? No, stacking takes vertical space.
-     Wait, if they are row, they take less height (only max height of one row).
-     If they are column, they take sum of heights.
-     
-     The user said "right-header 高度小一點".
-     If it was 200px min-height, simply reducing that is the main key.
-     Let's just change min-height to 90px.
-  */
+  flex-direction: column;
+  /* flex-direction: row; Default */
 }
 
 /* 讓 tab-content 和 tab-pane 高度一致，圖表自動填滿 */
@@ -125,9 +168,9 @@
 
 /* 右上分區自動填滿，內容可縮放，flex 可調整大小 */
 .right-top {
-  background: #e6e8ea;
+  background: var(--bg-panel);
   border-radius: 0;
-  border: 1.5px solid #bfc3c7;
+  border: 1.5px solid var(--border-panel);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -160,12 +203,16 @@
 
 body {
   font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
-  background: linear-gradient(120deg, #181c29 0%, #232a3b 100%);
+  background: linear-gradient(
+    120deg,
+    var(--bg-body-from) 0%,
+    var(--bg-body-to) 100%
+  );
   margin: 0;
   padding: 0;
   min-height: 100vh;
   font-size: 20px;
-  color: #232a3b;
+  color: var(--text-main);
   letter-spacing: 0.02em;
 }
 
@@ -207,9 +254,9 @@ body {
 
 .top-panel {
   width: 100%;
-  background: #e6e8ea;
+  background: var(--bg-panel);
   border-radius: 16px;
-  border: 1.5px solid #bfc3c7;
+  border: 1.5px solid var(--border-panel);
   padding: 8px;
   margin-bottom: 0;
   transition: border 0.2s;
@@ -217,9 +264,9 @@ body {
 }
 
 .left-panel {
-  background: #e6e8ea;
+  background: var(--bg-panel);
   border-radius: 16px;
-  border: 1.5px solid #bfc3c7;
+  border: 1.5px solid var(--border-panel);
   margin-bottom: 0;
   display: flex;
   flex-direction: column;
@@ -246,8 +293,8 @@ body {
   min-height: 100px;
   transition: border 0.2s;
   width: 100%;
-  background: #e6e8ea;
-  border: 1.5px solid #bfc3c7;
+  background: var(--bg-panel);
+  border: 1.5px solid var(--border-panel);
   padding: 8px;
 }
 
@@ -274,4 +321,49 @@ body {
     padding: 4px;
     border-radius: 8px 8px 0 0;
   }
+}
+
+/* 移除按鈕點擊後的藍色外框 (Focus Ring)，避免視覺閃爍不適 */
+.btn:focus,
+.btn:active:focus,
+.nav-link:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.btn:active:focus {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 表格深色模式高對比優化 (針對 TN/IPS 螢幕格線不可見問題 - 調整為柔和可見) */
+[data-bs-theme="dark"] .table {
+  --bs-table-border-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+[data-bs-theme="dark"] .table td,
+[data-bs-theme="dark"] .table th,
+[data-bs-theme="dark"] table.dataTable td,
+[data-bs-theme="dark"] table.dataTable th {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  opacity: 1;
+}
+
+/* 確保 DataTables 分頁按鈕在深色模式也可見 */
+[data-bs-theme="dark"]
+  .dataTables_wrapper
+  .dataTables_paginate
+  .paginate_button {
+  color: #ffffff !important;
+}
+[data-bs-theme="dark"]
+  .dataTables_wrapper
+  .dataTables_paginate
+  .paginate_button.disabled {
+  color: #6c757d !important;
+}
+
+/* 增加表格與分頁控制項的間距，避免「黏太近」 */
+.dataTables_wrapper .row:last-child {
+  margin-top: 16px !important;
 }
