@@ -10,7 +10,7 @@
 
 [data-bs-theme="dark"] {
   --bg-panel: #212529;
-  --border-panel: #6c757d;
+  --border-panel: rgba(255, 255, 255, 0.15);
   --text-main: #ffffff;
   --bg-body-from: #000000;
   --bg-body-to: #1a1d20;
@@ -362,4 +362,9 @@ body {
   .dataTables_paginate
   .paginate_button.disabled {
   color: #6c757d !important;
+}
+
+/* 增加表格與分頁控制項的間距，避免「黏太近」 */
+.dataTables_wrapper .row:last-child {
+  margin-top: 16px !important;
 }

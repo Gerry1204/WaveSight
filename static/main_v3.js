@@ -1318,6 +1318,10 @@ document.addEventListener("DOMContentLoaded", function () {
       plot_bgcolor: bgColor,
       paper_bgcolor: bgColor,
       font: { color: textColor },
+      "xaxis.gridcolor": isDark ? "rgba(255, 255, 255, 0.15)" : "#ddd",
+      "xaxis.zerolinecolor": isDark ? "rgba(255, 255, 255, 0.15)" : "#ddd",
+      "yaxis.gridcolor": isDark ? "rgba(255, 255, 255, 0.15)" : "#ddd",
+      "yaxis.zerolinecolor": isDark ? "rgba(255, 255, 255, 0.15)" : "#ddd",
     };
 
     ["myPlot", "fftPlot", "comparePlot"].forEach((id) => {
@@ -1583,8 +1587,29 @@ document.addEventListener("DOMContentLoaded", function () {
           title: name,
           autosize: true,
           margin: { l: 40, r: 20, t: 40, b: 40 },
-          yaxis: { title: "", automargin: true },
-          xaxis: { title: "Time (s)" },
+          yaxis: {
+            title: "",
+            automargin: true,
+            gridcolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+            zerolinecolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+          },
+          xaxis: {
+            title: "Time (s)",
+            gridcolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+            zerolinecolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+          },
           plot_bgcolor:
             document.documentElement.getAttribute("data-bs-theme") === "dark"
               ? "#212529"
