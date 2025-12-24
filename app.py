@@ -6,11 +6,7 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-# 新增按鈕1事件路由
-@app.route('/button1', methods=['POST'])
-def button1():
-    print(1)
-    return '', 204
+
 
 
 
@@ -40,7 +36,10 @@ def upload_csv():
             y_list.append([])
         for row in reader:
             if len(row) >= 2:
-                x.append(row[0])
+                try:
+                    x.append(float(row[0]))
+                except ValueError:
+                    x.append(row[0])
                 for i in range(1, len(header)):
                     try:
                         y_list[i-1].append(float(row[i]))

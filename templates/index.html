@@ -230,6 +230,7 @@
                     background-color: #32cd32;
                     color: white;
                     border-color: #2eb82e;
+                    min-width: 120px;
                   "
                 >
                   繪製平均線
@@ -267,6 +268,7 @@
                   id="filter-cutoff1"
                   class="form-control form-control-sm"
                   placeholder="Hz1"
+                  style="width: 100px"
                 />
                 <span class="small" id="cutoff-sep" style="display: none"
                   >~</span
@@ -276,22 +278,24 @@
                   id="filter-cutoff2"
                   class="form-control form-control-sm"
                   placeholder="Hz2"
-                  style="display: none"
+                  style="display: none; width: 100px"
                 />
+                <button
+                  type="button"
+                  class="btn btn-sm fw-bold ms-auto"
+                  id="apply-filter-btn"
+                  onclick="window.applyFilter()"
+                  style="
+                    background-color: #ffd700;
+                    color: #333;
+                    border-color: #e6c200;
+                    white-space: nowrap;
+                    min-width: 120px;
+                  "
+                >
+                  套用濾波
+                </button>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm w-100 fw-bold"
-                id="apply-filter-btn"
-                onclick="window.applyFilter()"
-                style="
-                  background-color: #ffd700;
-                  color: #333;
-                  border-color: #e6c200;
-                "
-              >
-                套用濾波
-              </button>
             </div>
 
             <button

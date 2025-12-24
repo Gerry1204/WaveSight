@@ -440,9 +440,25 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       console.log("Compare Plot: Axis1=", axisIdx1, "Axis2=", axisIdx2);
+
+      // 檢查X軸類型是否一致
+      let x1 = globalTableX;
+      let x2 = globalTableX2;
+      let isNum1 = x1.length > 0 && typeof x1[0] === "number";
+      let isNum2 = x2.length > 0 && typeof x2[0] === "number";
+      let xTitle = "x";
+
+      if (isNum1 !== isNum2) {
+        console.warn("X軸類型不一致 (數值 vs 字串)，改用索引繪製");
+        // 產生索引陣列
+        x1 = Array.from({ length: x1.length }, (_, i) => i);
+        x2 = Array.from({ length: x2.length }, (_, i) => i);
+        xTitle = "Index (X軸類型不符)";
+      }
+
       // 畫疊圖
       let trace1 = {
-        x: globalTableX,
+        x: x1,
         y: globalTableYList[axisIdx1],
         type: "scatter",
         mode: "lines",
@@ -450,7 +466,7 @@ document.addEventListener("DOMContentLoaded", function () {
         line: { color: "#FF0000", width: 2 },
       };
       let trace2 = {
-        x: globalTableX2,
+        x: x2,
         y: globalTableYList2[axisIdx2],
         type: "scatter",
         mode: "lines",
@@ -459,7 +475,7 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       let layout = {
         title: "疊圖比較",
-        xaxis: { title: "x" },
+        xaxis: { title: xTitle },
         yaxis: { title: "y" },
         plot_bgcolor: "#f4f6fa",
         paper_bgcolor: "#f4f6fa",
@@ -552,15 +568,8 @@ if (fftBtn) {
       });
   });
 }
-// 按鈕1點擊事件：在 console 顯示 1
+
 document.addEventListener("DOMContentLoaded", function () {
-  var btn1 = document.querySelector(".bottom-buttons .btn:nth-child(1)");
-  if (btn1) {
-    btn1.addEventListener("click", function () {
-      console.log(1);
-      fetch("/button1", { method: "POST" });
-    });
-  }
   // 按鈕4：匯入 CSV
   var btn4 = document.getElementById("import-csv-btn");
   if (btn4) {
