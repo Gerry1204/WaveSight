@@ -490,8 +490,28 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       let layout = {
         title: "疊圖比較",
-        xaxis: { title: xTitle },
-        yaxis: { title: "y" },
+        xaxis: {
+          title: xTitle,
+          gridcolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "rgba(255, 255, 255, 0.15)"
+              : "#ddd",
+          zerolinecolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "rgba(255, 255, 255, 0.15)"
+              : "#ddd",
+        },
+        yaxis: {
+          title: "y",
+          gridcolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "rgba(255, 255, 255, 0.15)"
+              : "#ddd",
+          zerolinecolor:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "rgba(255, 255, 255, 0.15)"
+              : "#ddd",
+        },
         plot_bgcolor:
           document.documentElement.getAttribute("data-bs-theme") === "dark"
             ? "#212529"
@@ -531,6 +551,18 @@ if (fftBtn) {
       alert("請先載入資料並選擇軸");
       return;
     }
+
+    // Loading State
+    const originalText = fftBtn.innerHTML;
+    fftBtn.disabled = true;
+    fftBtn.innerHTML =
+      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 分析中...';
+
+    const restoreBtn = () => {
+      fftBtn.disabled = false;
+      fftBtn.innerHTML = originalText;
+    };
+
     console.log("FFT Request: Axis=", axisIdx, "Range=", start, "~", end);
     // 送出 FFT 請求
     fetch("/fft", {
@@ -548,6 +580,7 @@ if (fftBtn) {
       .then((json) => {
         if (json.error) {
           alert("FFT 錯誤: " + json.error);
+          restoreBtn();
           return;
         }
         // 畫 FFT 結果於 FFT 分頁
@@ -564,8 +597,28 @@ if (fftBtn) {
         };
         let layout = {
           title: "FFT 頻譜圖",
-          xaxis: { title: "頻率 (Hz)" },
-          yaxis: { title: "幅值" },
+          xaxis: {
+            title: "頻率 (Hz)",
+            gridcolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+            zerolinecolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+          },
+          yaxis: {
+            title: "幅值",
+            gridcolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+            zerolinecolor:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "rgba(255, 255, 255, 0.15)"
+                : "#ddd",
+          },
           plot_bgcolor:
             document.documentElement.getAttribute("data-bs-theme") === "dark"
               ? "#212529"
@@ -589,9 +642,12 @@ if (fftBtn) {
         // 自動切換到 FFT 分頁
         let fftTab = document.getElementById("fft-tab");
         if (fftTab) fftTab.click();
+
+        restoreBtn();
       })
       .catch((err) => {
         alert("FFT 請求失敗: " + err);
+        restoreBtn();
       });
   });
 }
@@ -636,8 +692,33 @@ document.addEventListener("DOMContentLoaded", function () {
                   title: "",
                   autosize: true,
                   margin: { l: 40, r: 20, t: 40, b: 40 },
-                  yaxis: { title: "", automargin: true },
-                  xaxis: { title: "" },
+                  yaxis: {
+                    title: "",
+                    automargin: true,
+                    gridcolor:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "#ddd",
+                    zerolinecolor:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "#ddd",
+                  },
+                  xaxis: {
+                    title: "",
+                    gridcolor:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "#ddd",
+                    zerolinecolor:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "rgba(255, 255, 255, 0.15)"
+                        : "#ddd",
+                  },
                   plot_bgcolor:
                     document.documentElement.getAttribute("data-bs-theme") ===
                     "dark"
@@ -1358,8 +1439,29 @@ window.loadDemoSignal = function (type) {
     title: name,
     autosize: true,
     margin: { l: 40, r: 20, t: 40, b: 40 },
-    yaxis: { title: "", automargin: true },
-    xaxis: { title: "Time (s)" },
+    yaxis: {
+      title: "",
+      automargin: true,
+      gridcolor:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#555"
+          : "#ddd",
+      zerolinecolor:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#555"
+          : "#ddd",
+    },
+    xaxis: {
+      title: "Time (s)",
+      gridcolor:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#555"
+          : "#ddd",
+      zerolinecolor:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#555"
+          : "#ddd",
+    },
     plot_bgcolor:
       document.documentElement.getAttribute("data-bs-theme") === "dark"
         ? "#212529"
