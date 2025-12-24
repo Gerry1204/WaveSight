@@ -413,17 +413,17 @@ document.addEventListener("DOMContentLoaded", function () {
         x: globalTableX,
         y: globalTableYList[axisIdx1],
         type: "scatter",
-        mode: "lines+markers",
+        mode: "lines",
         name: globalTableHeader ? globalTableHeader[axisIdx1 + 1] : "檔案1",
-        marker: { color: "#50b4ff" },
+        line: { color: "#FF0000", width: 2 },
       };
       let trace2 = {
         x: globalTableX2,
         y: globalTableYList2[axisIdx2],
         type: "scatter",
-        mode: "lines+markers",
+        mode: "lines",
         name: globalTableHeader2 ? globalTableHeader2[axisIdx2 + 1] : "檔案2",
-        marker: { color: "#ff7f0e" },
+        line: { color: "#808080", width: 2 },
       };
       let layout = {
         title: "疊圖比較",
@@ -490,8 +490,8 @@ if (fftBtn) {
           type: "scatter",
           mode: "lines",
           name: "FFT 頻譜",
-          marker: { color: "#ff9800" },
-          line: { width: 2, color: "#ff9800" },
+          // FFT 紫色
+          line: { width: 2, color: "#9400D3" },
         };
         let layout = {
           title: "FFT 頻譜圖",
@@ -558,20 +558,35 @@ document.addEventListener("DOMContentLoaded", function () {
                 json.x ? json.x.length : 0
               );
               console.log("匯入檔案1 詳細資料 (json):", json);
-              // 多軸支援：取得 x, y_list, header 陣列，動態產生多條線
               if (json.x && json.y_list && json.header) {
-                data = [];
+                chartData = [];
+                // Reset layout to ensure axis types are re-inferred (fixes string vs number axis issue)
+                layout = {
+                  title: "",
+                  autosize: true,
+                  margin: { l: 40, r: 20, t: 40, b: 40 },
+                  yaxis: { title: "", automargin: true },
+                  xaxis: { title: "" },
+                  plot_bgcolor: "#f4f6fa",
+                  paper_bgcolor: "#f4f6fa",
+                };
+
+                // 三軸配色：紅、綠、藍
+                const axisColors = ["#FF0000", "#008000", "#0000FF"];
                 for (let i = 0; i < json.y_list.length; i++) {
-                  data.push({
+                  chartData.push({
                     x: json.x,
                     y: json.y_list[i],
                     type: "scatter",
                     mode: "lines+markers",
                     name: json.header[i + 1] || `y${i + 1}`,
+                    line: {
+                      width: 2,
+                      color: axisColors[i % axisColors.length],
+                    },
                     marker: {
-                      color: ["#50b4ff", "#ff7f0e", "#2ca02c", "#d62728"][
-                        i % 4
-                      ],
+                      size: 4,
+                      color: axisColors[i % axisColors.length],
                     },
                   });
                 }
@@ -639,28 +654,15 @@ function updateHeaderStats(
 
 document.addEventListener("DOMContentLoaded", function () {
   // 計算按鈕事件
+  // 計算按鈕事件：僅計算 Header 統計值
   const calcBtn = document.getElementById("calc-btn");
   if (calcBtn) {
     calcBtn.addEventListener("click", function () {
-      // 計算每N平均時印出資料
-      // ...existing code...
-      // 計算後自動切換到圖表分頁
-      let chartTab = document.getElementById("chart-tab");
-      if (chartTab) chartTab.click();
       const axisIdx = parseInt(document.getElementById("axis-select").value);
       const start = parseInt(document.getElementById("range-start").value);
       const end = parseInt(document.getElementById("range-end").value);
-      const n = parseInt(document.getElementById("avg-n").value);
-      console.log(
-        "Calc Stats: Axis=",
-        axisIdx,
-        "Range=",
-        start,
-        "~",
-        end,
-        "N=",
-        n
-      );
+
+      console.log("Calc Stats: Axis=", axisIdx, "Range=", start, "~", end);
       if (!globalTableYList || !globalTableYList[axisIdx]) {
         updateHeaderStats("-", "-", "-");
         return;
@@ -702,24 +704,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const q25 = sorted.length > 0 ? quantile(sorted, 0.25).toFixed(3) : "-";
       const q75 = sorted.length > 0 ? quantile(sorted, 0.75).toFixed(3) : "-";
 
-      // 每N筆平均
-      let nMeans = [];
-      let nMeansX = [];
-      for (let i = 0; i < arr.length; i += n) {
-        const chunk = arr.slice(i, i + n);
-        const chunkMean =
-          chunk.reduce((a, b) => a + Number(b), 0) / chunk.length;
-        nMeans.push(Number(chunkMean.toFixed(3)));
-        // x 軸永遠取每區間的第一個 x 值
-        if (globalTableX) {
-          let xChunk = globalTableX.slice(start + i, start + i + n);
-          if (xChunk.length > 0) {
-            nMeansX.push(xChunk[0]);
-          }
-        }
-      }
-      console.log("nMeansX:", nMeansX);
-      console.log("nMeans:", nMeans);
       console.log("統計結果:", {
         mean,
         max,
@@ -733,7 +717,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       updateHeaderStats(mean, max, min, rms, std, variance, median, q25, q75);
 
-      // 分位數計算 function
       function quantile(arr, q) {
         const pos = (arr.length - 1) * q;
         const base = Math.floor(pos);
@@ -744,11 +727,44 @@ document.addEventListener("DOMContentLoaded", function () {
           return arr[base];
         }
       }
+    });
+  }
 
-      // 平均線 x 軸直接用每區間第一個 x 值
-      // 先找出現有圖表上有沒有平均線
+  // 繪製每N筆平均線按鈕事件
+  const avgBtn = document.getElementById("apply-avg-btn");
+  if (avgBtn) {
+    avgBtn.addEventListener("click", function () {
+      const axisIdx = parseInt(document.getElementById("axis-select").value);
+      const start = parseInt(document.getElementById("range-start").value);
+      const end = parseInt(document.getElementById("range-end").value);
+      const n = parseInt(document.getElementById("avg-n").value);
+
+      if (!globalTableYList || !globalTableYList[axisIdx]) {
+        alert("無資料");
+        return;
+      }
+      const arr = globalTableYList[axisIdx].slice(start, end + 1);
+      if (arr.length === 0) return;
+
+      // 每N筆平均
+      let nMeans = [];
+      let nMeansX = [];
+      for (let i = 0; i < arr.length; i += n) {
+        const chunk = arr.slice(i, i + n);
+        const chunkMean =
+          chunk.reduce((a, b) => a + Number(b), 0) / chunk.length;
+        nMeans.push(Number(chunkMean.toFixed(3)));
+        if (globalTableX) {
+          let xChunk = globalTableX.slice(start + i, start + i + n);
+          if (xChunk.length > 0) {
+            nMeansX.push(xChunk[0]);
+          }
+        }
+      }
+      console.log("繪製平均線 - N:", n, "Points:", nMeans.length);
+
+      // 繪圖
       let plotDiv = document.getElementById("myPlot");
-      // 若 plotDiv.data 不存在，先初始化
       if (plotDiv && !plotDiv.data) {
         Plotly.newPlot(plotDiv, [], { title: "" });
       }
@@ -760,20 +776,22 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
       }
-      // 若有舊平均線，全部刪除
       if (traceIdxs.length > 0) {
         Plotly.deleteTraces(plotDiv, traceIdxs);
       }
-      // 新增平均線（name 一定是『每N筆平均』）
       Plotly.addTraces(plotDiv, {
         x: nMeansX,
         y: nMeans,
         type: "scatter",
-        mode: "lines+markers",
+        mode: "lines", // Explicitly using lines as per the dashed line style
         name: "每N筆平均",
-        marker: { color: "#e83e8c", size: 8 },
-        line: { dash: "dot", width: 3, color: "#e83e8c" },
+        // 平均線 淺綠色
+        line: { dash: "dot", width: 3, color: "#32CD32" },
       });
+
+      // 切換到圖表頁
+      let chartTab = document.getElementById("chart-tab");
+      if (chartTab) chartTab.click();
     });
   }
 });
@@ -797,13 +815,14 @@ globalTableHeader = ["Index", "預設訊號"];
 globalTableX = defaultX;
 globalTableYList = [defaultY];
 
-var data = [
+var chartData = [
   {
     x: defaultX,
     y: defaultY,
     type: "scatter",
     mode: "lines",
-    line: { color: "#50b4ff", width: 2 },
+    // 預設資料也要符合紅綠藍邏輯，第一條為紅
+    line: { color: "#FF0000", width: 2 },
     name: "預設訊號",
   },
 ];
@@ -838,7 +857,7 @@ function resizePlot() {
   var rect = parent.getBoundingClientRect();
   if (!rect || !rect.height || !rect.width) return;
   try {
-    Plotly.newPlot("myPlot", data, layout, {
+    Plotly.newPlot("myPlot", chartData, layout, {
       responsive: true,
       displayModeBar: true,
     });
@@ -894,7 +913,7 @@ function syncTableWithChart() {
     table.appendChild(tbody);
   } else {
     // fallback 單軸
-    if (data && data[0] && data[0].x) {
+    if (chartData && chartData[0] && chartData[0].x) {
       var thead = document.createElement("thead");
       var trHead = document.createElement("tr");
       var th1 = document.createElement("th");
@@ -906,13 +925,13 @@ function syncTableWithChart() {
       thead.appendChild(trHead);
       table.appendChild(thead);
       var tbody = document.createElement("tbody");
-      for (let i = 0; i < data[0].x.length; i++) {
+      for (let i = 0; i < chartData[0].x.length; i++) {
         var tr = document.createElement("tr");
         var td1 = document.createElement("td");
-        td1.textContent = data[0].x[i];
+        td1.textContent = chartData[0].x[i];
         tr.appendChild(td1);
         var td2 = document.createElement("td");
-        td2.textContent = data[0].y[i];
+        td2.textContent = chartData[0].y[i];
         tr.appendChild(td2);
         tbody.appendChild(tr);
       }
@@ -1059,7 +1078,7 @@ window.applyFilter = function () {
           type: "scatter",
           mode: "lines",
           name: `Filtered (${type})`,
-          line: { width: 2, color: "#e91e63" },
+          line: { width: 2, color: "#FFD700" }, // gold/yellow
           opacity: 0.8,
         });
 

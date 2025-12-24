@@ -66,7 +66,10 @@ def fft():
         return jsonify({'error': 'Missing y_list or axis'}), 400
     try:
         y = y_list[axis][start:end]
-        y = np.array(y, dtype=float)
+        try:
+            y = np.array(y, dtype=float)
+        except ValueError:
+            return jsonify({'error': 'Selected data contains non-numeric values'}), 400
         N = len(y)
         if N == 0:
             return jsonify({'error': 'No data for FFT'}), 400
@@ -98,7 +101,10 @@ def apply_filter():
         return jsonify({'error': 'Missing parameters'}), 400
 
     try:
-        y = np.array(y, dtype=float)
+        try:
+            y = np.array(y, dtype=float)
+        except ValueError:
+            return jsonify({'error': 'Selected data contains non-numeric values'}), 400
         nyq = 0.5 * fs
         
         # 正規化截止頻率
@@ -126,4 +132,4 @@ def apply_filter():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=8000, debug=True)
