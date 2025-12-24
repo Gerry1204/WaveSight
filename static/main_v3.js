@@ -403,7 +403,16 @@ document.addEventListener("DOMContentLoaded", function () {
               URL.revokeObjectURL(url);
             }
           } else if (type === "png") {
-            if (window.Plotly && document.getElementById("comparePlot")) {
+            var compareDiv = document.getElementById("comparePlot");
+            if (
+              !compareDiv ||
+              !compareDiv.data ||
+              compareDiv.data.length === 0
+            ) {
+              alert("請先產生疊圖");
+              return;
+            }
+            if (window.Plotly) {
               saveBtn.disabled = true;
               Plotly.downloadImage("comparePlot", {
                 format: type,
