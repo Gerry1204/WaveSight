@@ -91,21 +91,20 @@
   letter-spacing: 0.02em;
 }
 
-/* Button Hover and Active Effects */
+/* Button Hover and Active Effects - 移除 transform 避免移動閃爍 */
 .btn {
-  transition: all 0.2s ease;
+  transition: filter 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  filter: brightness(1.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn:active {
-  filter: brightness(0.95);
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  filter: brightness(0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .header-labels span,

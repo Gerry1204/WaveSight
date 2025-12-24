@@ -520,6 +520,12 @@ document.addEventListener("DOMContentLoaded", function () {
           document.documentElement.getAttribute("data-bs-theme") === "dark"
             ? "#212529"
             : "#f4f6fa",
+        font: {
+          color:
+            document.documentElement.getAttribute("data-bs-theme") === "dark"
+              ? "#ffffff"
+              : "#333",
+        },
       };
       var compareDiv = document.getElementById("comparePlot");
       let parent =
@@ -627,6 +633,12 @@ if (fftBtn) {
             document.documentElement.getAttribute("data-bs-theme") === "dark"
               ? "#212529"
               : "#f4f6fa",
+          font: {
+            color:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "#ffffff"
+                : "#333",
+          },
         };
         // 取得容器大小自動調整
         let fftDiv = document.getElementById("fftPlot");
@@ -729,6 +741,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     "dark"
                       ? "#212529"
                       : "#f4f6fa",
+                  font: {
+                    color:
+                      document.documentElement.getAttribute("data-bs-theme") ===
+                      "dark"
+                        ? "#ffffff"
+                        : "#333",
+                  },
                 };
 
                 // 三軸配色：紅、綠、藍
@@ -1474,6 +1493,12 @@ window.loadDemoSignal = function (type) {
       document.documentElement.getAttribute("data-bs-theme") === "dark"
         ? "#212529"
         : "#f4f6fa",
+    font: {
+      color:
+        document.documentElement.getAttribute("data-bs-theme") === "dark"
+          ? "#ffffff"
+          : "#333",
+    },
   };
 
   chartData = [];
@@ -1618,6 +1643,12 @@ document.addEventListener("DOMContentLoaded", function () {
             document.documentElement.getAttribute("data-bs-theme") === "dark"
               ? "#212529"
               : "#f4f6fa",
+          font: {
+            color:
+              document.documentElement.getAttribute("data-bs-theme") === "dark"
+                ? "#ffffff"
+                : "#333",
+          },
         };
 
         Plotly.react("myPlot", [trace], layout);
