@@ -144,9 +144,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("準備儲存 - 目標:", target, "類型:", type);
       try {
         // 儲存圖表/表格/FFT/疊圖
-        if (target === "chart") {
+        if (target === "chart_original") {
+          // 儲存原始資料 (CSV from global data)
           if (type === "csv") {
-            // 儲存主圖表 csv
             if (!globalTableX || !globalTableYList) {
               console.warn("Save Error: No data to save.");
               alert("沒有可儲存的資料");
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (window.showSaveFilePicker) {
               (async () => {
                 const handle = await window.showSaveFilePicker({
-                  suggestedName: "chart.csv",
+                  suggestedName: "original_chart.csv",
                   types: [
                     {
                       description: "CSV 檔案",
@@ -186,80 +186,110 @@ document.addEventListener("DOMContentLoaded", function () {
               var url = URL.createObjectURL(blob);
               var a = document.createElement("a");
               a.href = url;
-              a.download = "chart.csv";
+              a.download = "original_chart.csv";
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
             }
-          } else if (target === "nmean") {
-            if (type === "csv") {
-              // 匯出每N平均線資料
-              let plotDiv = document.getElementById("myPlot");
-              if (!plotDiv || !plotDiv.data) {
-                console.log("nmeanTrace.x: []");
-                console.log("nmeanTrace.y: []");
-                alert("沒有可儲存的平均線資料");
-                return;
-              }
-              let nmeanTrace = null;
-              for (let i = 0; i < plotDiv.data.length; i++) {
-                if (plotDiv.data[i] && plotDiv.data[i].name === "每N筆平均") {
-                  nmeanTrace = plotDiv.data[i];
-                  break;
-                }
-              }
-              if (!nmeanTrace) {
-                console.log("nmeanTrace.x: []");
-                console.log("nmeanTrace.y: []");
-                alert("沒有可儲存的平均線資料");
-                return;
-              }
-              console.log("nmeanTrace.x:", nmeanTrace.x);
-              console.log("nmeanTrace.y:", nmeanTrace.y);
-              let csv = "x,mean\n";
-              for (let i = 0; i < nmeanTrace.x.length; i++) {
-                csv += nmeanTrace.x[i] + "," + nmeanTrace.y[i] + "\n";
-              }
-              console.log("nmean csv:", csv);
-              var blob = new Blob([csv], { type: "text/csv" });
-              var url = URL.createObjectURL(blob);
-              var a = document.createElement("a");
-              a.href = url;
-              a.download = "nmean.csv";
-              document.body.appendChild(a);
-              setTimeout(function () {
-                a.click();
-                setTimeout(function () {
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }, 500);
-              }, 100);
-            }
-          } else if (type === "xls") {
-            alert("XLS/XLSX 匯出請用 Excel 或另行實作");
-          } else if (type === "xlsx") {
-            alert("XLS/XLSX 匯出請用 Excel 或另行實作");
-          } else if (type === "png" || type === "jpg") {
+          } else if (type === "png") {
             if (window.Plotly && document.getElementById("myPlot")) {
-              try {
-                Plotly.downloadImage("myPlot", {
-                  format: type,
-                  filename: "chart",
+              saveBtn.disabled = true;
+              Plotly.downloadImage("myPlot", {
+                format: type,
+                filename: "chart_original",
+              })
+                .then(function () {
+                  saveBtn.disabled = false;
+                })
+                .catch(function (error) {
+                  console.error(error);
+                  saveBtn.disabled = false;
                 });
-              } catch (e) {
-                console.error("Plotly.downloadImage error:", e);
-              }
+            }
+          } else {
+            alert("此格式不支援");
+          }
+        } else if (target === "chart_current") {
+          // 儲存目前圖表 (包含平均線、濾波等所有 visible trace)
+          if (type === "csv") {
+            let plotDiv = document.getElementById("myPlot");
+            if (!plotDiv || !plotDiv.data) {
+              alert("目前沒有圖表資料");
+              return;
+            }
+            // 抓取所有 visible 的 trace 數據
+            // 結構：x, trace1_y, trace2_y ...
+            // 注意不同 trace 的 x 可能長度不同 (例如平均線 x 點數較少)
+            // 為了存成單一 CSV，通常需要對齊 X 軸，或簡單地將它們分開存/合併存
+            // 這裡採用簡單合併：Time, Trace1_Name, Trace1_Val, Trace2_Name, Trace2_Val...
+            // 或是更簡單的：把所有 traces 的 x,y 依序寫入 (x1, y1, x2, y2...)
+
+            let csvContent = "";
+            let maxRows = 0;
+            // 先找出所有 visible traces
+            let visibleTraces = plotDiv.data.filter(
+              (t) => t.visible === true || t.visible === undefined
+            ); // undefined usually means visible in Plotly
+
+            if (visibleTraces.length === 0) {
+              alert("目前圖表沒有可見的數據");
+              return;
+            }
+
+            // 構建標頭
+            let headerArr = [];
+            visibleTraces.forEach((t, i) => {
+              let name = t.name || `Trace${i}`;
+              headerArr.push(`${name}_x`);
+              headerArr.push(`${name}_y`);
+              if (t.x.length > maxRows) maxRows = t.x.length;
+            });
+            csvContent += headerArr.join(",") + "\n";
+
+            // 構建內容
+            for (let i = 0; i < maxRows; i++) {
+              let rowData = [];
+              visibleTraces.forEach((t) => {
+                let xVal = t.x && i < t.x.length ? t.x[i] : "";
+                let yVal = t.y && i < t.y.length ? t.y[i] : "";
+                rowData.push(xVal);
+                rowData.push(yVal);
+              });
+              csvContent += rowData.join(",") + "\n";
+            }
+
+            var blob = new Blob([csvContent], { type: "text/csv" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "current_chart.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          } else if (type === "png") {
+            if (window.Plotly && document.getElementById("myPlot")) {
+              saveBtn.disabled = true;
+              Plotly.downloadImage("myPlot", {
+                format: type,
+                filename: "chart_current",
+              })
+                .then(function () {
+                  saveBtn.disabled = false;
+                })
+                .catch(function (error) {
+                  console.error(error);
+                  saveBtn.disabled = false;
+                });
             }
           }
         } else if (target === "table") {
           if (type === "csv") {
             // 儲存表格 csv
             $("#myTable").DataTable().button(".buttons-csv").trigger();
-          } else if (type === "xls" || type === "xlsx") {
-            alert("表格僅支援 CSV/XLSX 匯出");
           } else {
-            alert("表格僅支援 CSV/XLSX 匯出");
+            alert("表格僅支援 CSV 匯出");
           }
         } else if (target === "fft") {
           if (type === "csv") {
@@ -301,20 +331,20 @@ document.addEventListener("DOMContentLoaded", function () {
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
             }
-          } else if (type === "xls") {
-            alert("XLS/XLSX 匯出請用 Excel 或另行實作");
-          } else if (type === "xlsx") {
-            alert("XLS/XLSX 匯出請用 Excel 或另行實作");
-          } else if (type === "png" || type === "jpg") {
+          } else if (type === "png") {
             if (window.Plotly && document.getElementById("fftPlot")) {
-              try {
-                Plotly.downloadImage("fftPlot", {
-                  format: type,
-                  filename: "fft",
+              saveBtn.disabled = true;
+              Plotly.downloadImage("fftPlot", {
+                format: type,
+                filename: "fft",
+              })
+                .then(function () {
+                  saveBtn.disabled = false;
+                })
+                .catch(function (e) {
+                  console.error("Plotly.downloadImage error:", e);
+                  saveBtn.disabled = false;
                 });
-              } catch (e) {
-                console.error("Plotly.downloadImage error:", e);
-              }
             }
           }
         } else if (target === "compare") {
@@ -366,18 +396,20 @@ document.addEventListener("DOMContentLoaded", function () {
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
             }
-          } else if (type === "xls" || type === "xlsx") {
-            alert("XLS/XLSX 匯出請用 Excel 或另行實作");
-          } else if (type === "png" || type === "jpg") {
+          } else if (type === "png") {
             if (window.Plotly && document.getElementById("comparePlot")) {
-              try {
-                Plotly.downloadImage("comparePlot", {
-                  format: type,
-                  filename: "compare",
+              saveBtn.disabled = true;
+              Plotly.downloadImage("comparePlot", {
+                format: type,
+                filename: "compare",
+              })
+                .then(function () {
+                  saveBtn.disabled = false;
+                })
+                .catch(function (e) {
+                  console.error("Plotly.downloadImage error:", e);
+                  saveBtn.disabled = false;
                 });
-              } catch (e) {
-                console.error("Plotly.downloadImage error:", e);
-              }
             }
           }
         }
@@ -779,6 +811,33 @@ document.addEventListener("DOMContentLoaded", function () {
       if (traceIdxs.length > 0) {
         Plotly.deleteTraces(plotDiv, traceIdxs);
       }
+
+      // 隱藏其他未選取的原始訊號 (設定為 legendonly 讓使用者可點擊圖例開啟)
+      if (plotDiv && plotDiv.data) {
+        let visibilityUpdates = [];
+        let indicesToUpdate = [];
+        const currentAxisIdx = parseInt(
+          document.getElementById("axis-select").value
+        );
+
+        for (let i = 0; i < plotDiv.data.length; i++) {
+          indicesToUpdate.push(i);
+          // 如果是目前選取的軸，則顯示；否則隱藏 (legendonly)
+          if (i === currentAxisIdx) {
+            visibilityUpdates.push(true);
+          } else {
+            visibilityUpdates.push("legendonly");
+          }
+        }
+
+        if (indicesToUpdate.length > 0) {
+          Plotly.restyle(
+            plotDiv,
+            { visible: visibilityUpdates },
+            indicesToUpdate
+          );
+        }
+      }
       Plotly.addTraces(plotDiv, {
         x: nMeansX,
         y: nMeans,
@@ -1069,6 +1128,34 @@ window.applyFilter = function () {
         if (!plotDiv) {
           console.error("Plot div not found");
           return;
+        }
+
+        // 隱藏其他未選取的原始訊號 (設定為 legendonly)
+        if (plotDiv && plotDiv.data) {
+          let visibilityUpdates = [];
+          let indicesToUpdate = [];
+          // axisIdx 來自 function scope 上方定義的變數
+
+          for (let i = 0; i < plotDiv.data.length; i++) {
+            indicesToUpdate.push(i);
+            // 如果是目前選取的軸，則顯示；否則隱藏 (legendonly)
+            // 注意：要排除已經存在的「濾波線」或「平均線」嗎？
+            // 需求是「隱藏其他訊號」，通常包含舊的分析線。
+            // 這裡簡單邏輯：只保留「原始選取軸」，其他全隱藏，讓畫面乾淨比較 "Raw vs Filtered"
+            if (i === axisIdx) {
+              visibilityUpdates.push(true);
+            } else {
+              visibilityUpdates.push("legendonly");
+            }
+          }
+
+          if (indicesToUpdate.length > 0) {
+            Plotly.restyle(
+              plotDiv,
+              { visible: visibilityUpdates },
+              indicesToUpdate
+            );
+          }
         }
 
         console.log("Adding trace to plot...");

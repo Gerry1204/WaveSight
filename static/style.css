@@ -65,8 +65,42 @@
   padding: 8px;
   box-sizing: border-box;
   justify-content: space-between;
-  min-height: 200px;
-  /* flex-direction: row 為預設，可省略 */
+  min-height: 90px;
+  display: flex;
+  flex-direction: column; 
+  /* flex-direction: row 為預設，這裡改為 column 讓兩行對齊更好 ? 
+     Index.html 結構是 header-labels 和 header-values 兩個 div. 
+     原本 CSS 沒寫 flex-direction, 預設是 row? 
+     Wait, .right-header content is:
+     <div class="header-labels">...</div>
+     <div class="header-values">...</div>
+     If default is row, they are side-by-side. 
+     Use column to stack them if that was the intention, or check if they were side-by-side.
+     Looking at the screenshot description or inference: 
+     "stats" usually are label above value. 
+     If they are row, they are left/right. 
+     
+     Let's check index.html again. 
+     It has header-labels and header-values. 
+     Inside header-labels: span, span...
+     If right-header is flex row (default), then labels block is left, values block is right? 
+     No, `header-values` has `margin-top: 4px`. This implies stacking.
+     So right-header should probably be flex-direction: column.
+     The original CSS had `/* flex-direction: row 為預設，可省略 */` but that might be a wrong comment if the user sees stacked. 
+     Actually, if they are `div`s and no flex is applied `display: flex` on parent, they become flex items using row direction.
+     So labels left, values right.
+     However, header-values has `margin-top: 4px`. This suggests vertical spacing.
+     If they are side by side, margin-top pushes it down... relative to what?
+     
+     Let's preserve existing flex behavior but fix height.
+     If the user wants "header height small", stacking them saves horizontal space? No, stacking takes vertical space.
+     Wait, if they are row, they take less height (only max height of one row).
+     If they are column, they take sum of heights.
+     
+     The user said "right-header 高度小一點".
+     If it was 200px min-height, simply reducing that is the main key.
+     Let's just change min-height to 90px.
+  */
 }
 
 /* 讓 tab-content 和 tab-pane 高度一致，圖表自動填滿 */
@@ -102,7 +136,7 @@
   padding: 8px;
   overflow: hidden;
   transition: border 0.2s;
-  height: 100%;
+  flex: 1; /* Replace height: 100% with flex: 1 to fill remaining space properly */
   gap: 0;
 }
 
