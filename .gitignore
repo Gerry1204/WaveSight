@@ -1,0 +1,21 @@
+# Python 相關 (如果是 Python 專案)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Node.js 相關 (如果是前端專案)
+node_modules/
+dist/
+
+# 系統檔案
+.DS_Store
+
+# 環境變數 (金鑰密碼千萬不能上傳)
+.env
+
+# Excel 檔案
+*.xlsx
+*.xls
+*.csv

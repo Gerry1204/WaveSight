@@ -1,0 +1,225 @@
+/* right-bottom 5 按鈕橫向排列現代感 */
+.bottom-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+}
+.bottom-buttons .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 1em;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+}
+.header-labels span,
+.header-values span {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+/* right-header 標籤與數值現代感樣式 */
+.header-labels,
+.header-values {
+  display: flex;
+  gap: 24px;
+  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #232a3b;
+  letter-spacing: 0.02em;
+  align-items: center;
+}
+.header-values {
+  margin-top: 4px;
+  font-size: 1.22em;
+  font-weight: bold;
+  color: #1a6cff;
+}
+/* 右上標題分區樣式 */
+.right-header {
+  width: 100%;
+  background: #e6e8ea;
+  border-radius: 16px 16px 0 0;
+  border: 1.5px solid #bfc3c7;
+  padding: 8px;
+  box-sizing: border-box;
+  justify-content: space-between;
+  min-height: 200px;
+  /* flex-direction: row 為預設，可省略 */
+}
+
+/* 讓 tab-content 和 tab-pane 高度一致，圖表自動填滿 */
+.right-top .tab-content {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.right-top .tab-pane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 右上分區自動填滿，內容可縮放，flex 可調整大小 */
+.right-top {
+  background: #e6e8ea;
+  border-radius: 0;
+  border: 1.5px solid #bfc3c7;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px;
+  overflow: hidden;
+  transition: border 0.2s;
+  height: 100%;
+  gap: 0;
+}
+
+.right-top .nav-tabs {
+  flex-shrink: 0;
+}
+
+/* canvas 自動縮放不超出分區，最大填滿剩餘空間 */
+.right-top canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+  background: transparent;
+  box-sizing: border-box;
+  /* 移除 aspect-ratio，讓高度自動填滿分區 */
+}
+
+body {
+  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(120deg, #181c29 0%, #232a3b 100%);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-size: 20px;
+  color: #232a3b;
+  letter-spacing: 0.02em;
+}
+
+.layout-root {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 100vw;
+  max-height: 100vh;
+  padding: 16px;
+}
+
+html,
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.bottom-row {
+  display: flex;
+  flex: auto;
+  gap: 8px;
+  min-height: 0;
+  height: 0;
+}
+
+.right-panels {
+  flex: 3 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 內部垂直間距 */
+  height: 100%;
+  min-width: 0;
+}
+
+.top-panel {
+  width: 100%;
+  background: #e6e8ea;
+  border-radius: 16px;
+  border: 1.5px solid #bfc3c7;
+  padding: 8px;
+  margin-bottom: 0;
+  transition: border 0.2s;
+  min-height: 60px;
+}
+
+.left-panel {
+  background: #e6e8ea;
+  border-radius: 16px;
+  border: 1.5px solid #bfc3c7;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  flex: 1 1 0;
+  min-width: 0; /* min-width: 400px 與 min-width: 0 重複，保留為 0 使其彈性 */
+  padding: 8px;
+  gap: 8px;
+  box-sizing: border-box;
+  max-width: 400px;
+}
+
+.right-panel {
+  flex: 3 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 320px;
+}
+
+.right-bottom {
+  border-radius: 0 0 16px 16px;
+  box-sizing: border-box;
+  min-height: 100px;
+  transition: border 0.2s;
+  width: 100%;
+  background: #e6e8ea;
+  border: 1.5px solid #bfc3c7;
+  padding: 8px;
+}
+
+/* 響應式 */
+@media (max-width: 1200px) {
+  .layout-root {
+    padding: 8px;
+  }
+
+  .left-panel {
+    padding: 4px;
+    border-radius: 8px;
+    max-width: 200px;
+  }
+  .top-panel {
+    padding: 4px;
+    border-radius: 8px;
+  }
+  .right-bottom {
+    padding: 4px;
+    border-radius: 0 0 8px 8px;
+  }
+  .right-header {
+    padding: 4px;
+    border-radius: 8px 8px 0 0;
+  }
+}
