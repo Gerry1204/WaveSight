@@ -1,3 +1,79 @@
+:root {
+  --bg-panel: #e6e8ea;
+  --border-panel: #bfc3c7;
+  --text-main: #232a3b;
+  --bg-body-from: #f8f9fa;
+  --bg-body-to: #e9ecef;
+  --header-val-color: #1a6cff;
+  --btn-bg: #ffffff;
+}
+
+[data-bs-theme="dark"] {
+  --bg-panel: #212529;
+  --border-panel: #495057;
+  --text-main: #f8f9fa;
+  --bg-body-from: #000000;
+  --bg-body-to: #1a1d20;
+  --header-val-color: #6ea8fe;
+  --btn-bg: #212529;
+}
+
+[data-bs-theme="dark"] #save-btn {
+  background-color: #ffffff;
+  color: #212529;
+  border-color: #ffffff;
+}
+
+/* 淺色模式下，主題切換按鈕 hover 變黑 */
+:not([data-bs-theme="dark"]) #theme-toggle:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* 深色模式下，主題切換按鈕 hover 變白 (反轉) */
+[data-bs-theme="dark"] #theme-toggle:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+/* 修正深色模式下禁用按鈕看不見的問題 */
+[data-bs-theme="dark"] .btn:disabled {
+  color: #adb5bd !important;
+  border-color: #6c757d !important;
+  opacity: 0.5;
+}
+
+/* 強制深色模式選單樣式 */
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .form-control {
+  background-color: #2b3035;
+  border-color: #495057;
+  color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .form-select:focus,
+[data-bs-theme="dark"] .form-control:focus {
+  background-color: #2b3035;
+  border-color: #86b7fe;
+  color: #dee2e6;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+[data-bs-theme="dark"] .form-select option {
+  background-color: #2b3035;
+  color: #dee2e6;
+}
+
+[data-bs-theme="dark"] ::placeholder {
+  color: #adb5bd !important;
+  opacity: 1;
+}
+
+[data-bs-theme="dark"] #version-badge {
+  background-color: #495057 !important;
+  color: #dee2e6 !important;
+  border-color: #6c757d !important;
+}
+
 /* right-bottom 5 按鈕橫向排列現代感 */
 .bottom-buttons {
   display: flex;
@@ -46,7 +122,7 @@
   font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
   font-size: 1.15em;
   font-weight: 600;
-  color: #232a3b;
+  color: var(--text-main);
   letter-spacing: 0.02em;
   align-items: center;
 }
@@ -54,14 +130,14 @@
   margin-top: 4px;
   font-size: 1.22em;
   font-weight: bold;
-  color: #1a6cff;
+  color: var(--header-val-color);
 }
 /* 右上標題分區樣式 */
 .right-header {
   width: 100%;
-  background: #e6e8ea;
+  background: var(--bg-panel);
   border-radius: 16px 16px 0 0;
-  border: 1.5px solid #bfc3c7;
+  border: 1.5px solid var(--border-panel);
   padding: 8px;
   box-sizing: border-box;
   justify-content: space-between;
@@ -125,9 +201,9 @@
 
 /* 右上分區自動填滿，內容可縮放，flex 可調整大小 */
 .right-top {
-  background: #e6e8ea;
+  background: var(--bg-panel);
   border-radius: 0;
-  border: 1.5px solid #bfc3c7;
+  border: 1.5px solid var(--border-panel);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -160,12 +236,12 @@
 
 body {
   font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
-  background: linear-gradient(120deg, #181c29 0%, #232a3b 100%);
+  background: linear-gradient(120deg, var(--bg-body-from) 0%, var(--bg-body-to) 100%);
   margin: 0;
   padding: 0;
   min-height: 100vh;
   font-size: 20px;
-  color: #232a3b;
+  color: var(--text-main);
   letter-spacing: 0.02em;
 }
 
@@ -207,9 +283,9 @@ body {
 
 .top-panel {
   width: 100%;
-  background: #e6e8ea;
+  background: var(--bg-panel);
   border-radius: 16px;
-  border: 1.5px solid #bfc3c7;
+  border: 1.5px solid var(--border-panel);
   padding: 8px;
   margin-bottom: 0;
   transition: border 0.2s;
@@ -217,9 +293,9 @@ body {
 }
 
 .left-panel {
-  background: #e6e8ea;
+  background: var(--bg-panel);
   border-radius: 16px;
-  border: 1.5px solid #bfc3c7;
+  border: 1.5px solid var(--border-panel);
   margin-bottom: 0;
   display: flex;
   flex-direction: column;
@@ -246,8 +322,8 @@ body {
   min-height: 100px;
   transition: border 0.2s;
   width: 100%;
-  background: #e6e8ea;
-  border: 1.5px solid #bfc3c7;
+  background: var(--bg-panel);
+  border: 1.5px solid var(--border-panel);
   padding: 8px;
 }
 

@@ -36,11 +36,13 @@ python app.py
 ## API 說明
 
 ### 1. 上傳 CSV (`/upload_csv`)
+
 - **Method**: `POST`
 - **參數**: `file` (CSV 檔案)
-- **回應**: JSON 格式，包含 `x` (X軸數據), `y_list` (多軸 Y 數據), `header` (欄位名稱)。
+- **回應**: JSON 格式，包含 `x` (X 軸數據), `y_list` (多軸 Y 數據), `header` (欄位名稱)。
 
 ### 2. 執行 FFT (`/fft`)
+
 - **Method**: `POST`
 - **Body (JSON)**:
   - `y_list`: 多軸數據列表 (List of List)
@@ -56,3 +58,11 @@ python app.py
 - `templates/index.html`: 前端介面。
 - `static/`: 靜態資源目錄。
 - `requirements.txt`: 依賴套件列表。
+
+## 預留功能 (Planned/Reserved Features)
+
+以下介面元素目前僅為預覽，功能尚未實作：
+
+1. **使用者系統**：登入、登出、個人檔案 (Profile)、儀表板 (Dashboard)。
+2. **通知系統**：鈴鐺圖示通知功能。
+3. **設定**：齒輪圖示全域設定功能。
